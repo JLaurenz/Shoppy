@@ -256,18 +256,17 @@ def buyer_view_search_product():
     global products
 
     print(">>[Search Product]<<")
+    #call product_view_search()
+    product_view_search()
+    input("Press [ENTER] to continue..")
+    #Ask user to add to cart yes or no
+    add_to_cart = str(input("Add to cart? (y/n): "))
+    if add_to_cart == "y":
+        product_id = str(input("Enter product id of item: "))
+        quantity = str(input("How many units of the product? "))
 
-    #show the existing categories
-    print("Existing Categories:>> " + str(product_get_categories().keys()))
-    product_category = str(input("Category: "))
-    product_name = str(input("Product Name: "))
-    product_description = str(input("Product Description: "))
-
-    #search the products
-    for product in products:
-        if product["product_category"] == product_category and product["product_name"] == product_name and product["product_description"] == product_description:
-            print("\n" + product_to_string(product))
-
+    else:
+        input("Press [ENTER] to continue..")
 #buyer view cart
 def buyer_view_my_products():
     """View cart
