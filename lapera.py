@@ -17,6 +17,7 @@ while(True):
     elif(choice == "2"):
         buyer_init()
         buyer_view_register()
+        
     elif(choice == "3"):
         seller_view_login()
     elif(choice == "4"):

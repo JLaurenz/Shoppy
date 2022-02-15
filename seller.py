@@ -112,6 +112,8 @@ def seller_view_register():
     in names of functions which require user
     interaction.
     """
+    #load seller database
+    seller_load_db()
     global sellers 
 
     print(">>[Register Seller]<<")
@@ -204,6 +206,8 @@ def seller_view_login():
 def seller_view_add_product():
     """Allows to seller to add a product.
     """
+    #load product database
+    product_load_db()
     global user_session
 
     new_product_dict = {}
@@ -230,7 +234,6 @@ def seller_view_add_product():
 def seller_view_menu():
     """The view for the seller options.
     """
-
     choice = '8'
     while choice != 'q':
         print(">>[Seller Menu]<<")
@@ -296,6 +299,7 @@ def seller_view_my_sales():
 def seller_view_my_products():
     """Show all the products of this user
     """
+    product_load_db()
     global products
 
     print("Listed below are your products: ")

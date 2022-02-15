@@ -1,4 +1,4 @@
-import getpass, os, hashlib
+import getpass, os, hashlib, datetime
 
 from globals import *
 from product import *
@@ -114,6 +114,8 @@ def buyer_view_register():
     in names of functions which require user
     interaction.
     """
+    #laod buyer database for consitency
+    buyer_load_db()
     global buyers 
 
     print(">>[Register buyer]<<")
@@ -203,39 +205,13 @@ def buyer_view_login():
         input("Unknown buyer! Press [ENTER] to continue.")
 
 
-def buyer_view_add_product():
-    """Allows to buyer to add a product.
-    """
-    global user_session
-
-    new_product_dict = {}
-
-    print(">>[Add Product]<<")
-
-    new_product_dict['product_id'] = str(len(products))
-    new_product_dict["product_buyer_id"] = user_session["session_id"]
-
-    #Show a guide of existing categories, populate other fields
-    print("Existing Categories:>> " + str(product_get_categories().keys()))
-    new_product_dict["product_category"] = str(input("Category: "))
-    new_product_dict["product_name"] = str(input("Product Name: "))
-    new_product_dict["product_description"] = str(input("Product Description: "))
-    new_product_dict["product_quantity"] = str(input("Quantity: "))
-    new_product_dict["product_unit_price"] = str(input("Unit Price: "))
-    
-    #save and reload by calling the functions in
-    #product.py
-    product_save_dict(new_product_dict)
-    product_load_db()
-
-
 def buyer_view_menu():
     """The view for the buyer options.
     """
 
     choice = '8'
     while choice != 'q':
-        print(">>[buyer Menu]<<")
+        print(">>[Buyer Menu]<<")
         print("[1] Search/Add to Cart ")
         print("[2] View Cart ")
         print("[3] View Total Expenses ")
@@ -245,7 +221,7 @@ def buyer_view_menu():
             buyer_view_search_product()
         elif choice == "2":
             #this is a function implemented in product.py
-            product_view_search()   
+            buyer_view_cart()   
         elif choice == "3":
             buyer_view_my_products()
 
@@ -253,34 +229,64 @@ def buyer_view_menu():
 def buyer_view_search_product():
     """Search product by name, category, and description.
     """
-    global products
+    global products ,carts
+    #load the product databases
+    product_load_db()
 
-    print(">>[Search Product]<<")
-    #call product_view_search()
-    product_view_search()
-    input("Press [ENTER] to continue..")
-    #Ask user to add to cart yes or no
+    #create a new car_dict
+    new_cart_dict = {}
+    print(">>[SEARCH]<<")
+    #call product_view_search() and save the return value into a dict
+    buyer_search_result = product_view_search()
+    #ask user to add to cart or not
     add_to_cart = str(input("Add to cart? (y/n): "))
-    if add_to_cart == "y":
-        product_id = str(input("Enter product id of item: "))
-        quantity = str(input("How many units of the product? "))
+    if add_to_cart == "y": #if yes
+        new_cart_dict['cart_id'] = str(len(carts)) #compute the cart length and assign it to the cart_id
+        new_cart_dict["cart_buyer_id"] = user_session["session_id"] #assign the buyer_id to the cart yung session id
+        product_id = str(input("Enter product id of item: ")) #get the product id yung id nung product
+        #check if product id to int is not in the product id of search result
+        if product_id not in buyer_search_result["product_id"]:# pag hindi tama yung product na nilagay babalik sa pinaka menu
+            print("Product id not found!")
+            return
+        else: #dito pag tama id ng product continue
+            new_cart_dict["cart_product_id"] = product_id
+            quantity = str(input("How many units of the product? "))
+            #access the product id and che4ck the qunatity
+            for product in products: #babasahin yung product tapos hahanapin yung qunatity 
+                if product["product_id"] == product_id:
+                    if int(quantity) > int(product["product_quantity"]): #pag naman sobra yung ininput na quantity ni user babalik sa pinaka menu ulet
+                        print("Not enough quantity!")
+                        return
+            else: #pag naman yung quantity na input na user ay mas mababa or sakto sa quantity  tutuloy
+                new_cart_dict["cart_quantity"] = quantity #assign the quantity to the cart
+                new_cart_dict["cart_checkedout"] = "0" #assign the cart_checkedout to 0 kasi pag naging 1 ibig sabihin checked out na ni user
+                new_cart_dict["cart_date"] = str(datetime.datetime.now()) #sasave lang to ng date
+        #save the new cart to cart 
 
+        #change the product quantity in the product database
+        for product in products: #loop ulet babasahin isa isa
+            if product["product_id"] == product_id:
+                product["product_quantity"] = str(int(product["product_quantity"]) - int(quantity)) #pag naman nahanap yung qunatity babawasang quantity sa product database
+                break #pag end yung loop
+        product_flush_to_file() # uulitin yung pag sasave ng product sa database
+        #save the new cart to cart database
+        cart_save_dict(new_cart_dict)
     else:
-        input("Press [ENTER] to continue..")
+        input("Press [ENTER] to continue..") #pag ayaw mag add to cart ni user
+
+
 #buyer view cart
-def buyer_view_my_products():
+def buyer_view_cart():
     """View cart
     """
     global user_session
-
+    
     print(">>[View Cart]<<")
+    #load the cart database
+    cart_load_db()
+    
+    input("Press [ENTER] to continue..")
 
-    #get the cart of the buyer
-    cart = product_get_cart(user_session["session_id"])
-
-    #show the cart
-    for product in cart:
-        print(product_to_string(product))
 
 #view total expenses
 def buyer_view_total_expenses():

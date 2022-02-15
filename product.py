@@ -1,5 +1,4 @@
-import getpass, os, hashlib
-
+import getpass, os, hashlib, random
 from globals import *
 
 def product_create_dict( product_id,
@@ -67,7 +66,6 @@ def product_load_db():
     #close the handle 
     product_db_handle.close()
 
-
 def product_init():
     """Initializes the product module. 
     It creates the product.db if it is absent 
@@ -97,7 +95,6 @@ def product_save_dict(product_dict):
     #write to file then close the handle
     product_db_handle.write(output_line)
     product_db_handle.close()
-
 
 #return a dictionary with the product_category as key
 def product_get_categories():
@@ -140,6 +137,9 @@ def product_view_search():
     #print the search results
     for search_result in search_results:
         print("[ "+ str(search_result["product_id"])+" ] - "+ str(search_result["product_name"]) + " , "+str(search_result["product_category"]) + " , "+ str(search_result["product_description"]) + " , "+str(search_result["product_unit_price"])+" per unit, "+str(search_result["product_quantity"])+" unit(s)")        
+    
+    input("Press [ENTER] to continue..")
+    return search_result
 
 def product_flush_to_file():
     product_db_handle = open("data/product.db","w")
@@ -154,3 +154,25 @@ def product_flush_to_file():
                     product_dict["product_unit_price"]+"\n")
         product_db_handle.write(output_line)
     product_db_handle.close()
+
+#display random 5 products
+def product_view_random():
+    #we are using the global variable
+    #load product databes
+    product_load_db()
+    global  products
+    #check if products is less than 5
+    #check if products is empty
+    if len(products) == 0:
+        print("No products available")
+    elif len(products) < 5:
+        #print the products
+        for product_dict in products:
+            print("[ "+ str(product_dict["product_id"])+" ] - "+ str(product_dict["product_name"]) + " , "+str(product_dict["product_category"]) + " , "+ str(product_dict["product_description"]) + " , "+str(product_dict["product_unit_price"])+" per unit, "+str(product_dict["product_quantity"])+" unit(s)")
+    else:
+        #randomly select 5 products
+        random_products = random.sample(products,5)
+        #print the products
+        for random_product in random_products:
+            print("[ "+ str(random_product["product_id"])+" ] - "+ str(random_product["product_name"]) + " , "+str(random_product["product_category"]) + " , "+ str(random_product["product_description"]) + " , "+str(random_product["product_unit_price"])+" per unit, "+str(random_product["product_quantity"])+" unit(s)")
+    input("Press [ENTER] to continue..")
