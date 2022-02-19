@@ -1,6 +1,7 @@
 from seller import *
 from product import *
 from buyer import *
+from cart import *
 
 while(True):
     print("Welcome to LAPERA Online Shopping!")

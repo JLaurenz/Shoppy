@@ -2,6 +2,7 @@ import getpass, os, hashlib
 
 from globals import *
 from product import *
+from sale import *
 
 def seller_create_dict( seller_id,
                         seller_email,
@@ -284,6 +285,9 @@ def seller_view_my_sales():
     global sales
     global user_session
 
+    #load sales database
+    sale_load_db()
+
     #go over the "sales" global variable 
     # and check for items related to the current 
     # logged in user 
@@ -301,6 +305,7 @@ def seller_view_my_products():
     """
     product_load_db()
     global products
+    global user_session
 
     print("Listed below are your products: ")
     for product in products:

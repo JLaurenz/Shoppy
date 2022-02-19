@@ -223,7 +223,7 @@ def buyer_view_menu():
             #this is a function implemented in product.py
             buyer_view_cart()   
         elif choice == "3":
-            buyer_view_my_products()
+            buyer_view_total_expenses()
 
 #search product by name, category, and description
 def buyer_view_search_product():
@@ -244,8 +244,8 @@ def buyer_view_search_product():
         new_cart_dict['cart_id'] = str(len(carts)) #compute the cart length and assign it to the cart_id
         new_cart_dict["cart_buyer_id"] = user_session["session_id"] #assign the buyer_id to the cart yung session id
         product_id = str(input("Enter product id of item: ")) #get the product id yung id nung product
-        #check if product id to int is not in the product id of search result
-        if product_id not in buyer_search_result["product_id"]:# pag hindi tama yung product na nilagay babalik sa pinaka menu
+        #check if product id to int is not in the product id of search result dictionary
+        if product_id not in buyer_search_result:
             print("Product id not found!")
             return
         else: #dito pag tama id ng product continue
@@ -275,33 +275,81 @@ def buyer_view_search_product():
         input("Press [ENTER] to continue..") #pag ayaw mag add to cart ni user
 
 
-#buyer view cart
 def buyer_view_cart():
-    """View cart
+    """Show all the products of this user
     """
-    global user_session
-    
-    print(">>[View Cart]<<")
-    #load the cart database
+    product_load_db()
     cart_load_db()
-    
-    input("Press [ENTER] to continue..")
+    global products
+    global carts
+    global user_session
+    i = 0;
+    print("Listed below are your products: ")
+    for cart in carts:
+        if cart["cart_buyer_id"] == user_session["session_id"]:
+            for product in products:
+                if product["product_id"] == cart["cart_product_id"]:
+                    i +=1
+                    print(
+                            " ["+cart["cart_product_id"]+"] - "+
+                            product["product_name"]+" - "+
+                            cart["cart_quantity"]+" unit(s)"
+                        )
+                    break
+    if i == 0:
+        print("No items in yout cart.")
+        return
+    print("There are "+str(i)+" items in your cart.")
+    #checkout or not
+    checkout = str(input("Checkout an Item [y/n]: "))
 
+    if checkout == "y":
 
+        checkout_item = str(input("Enter [Item ID] of item: "))
+        #create a new sales dict and save it to sales
+        new_sales_dict = {}
+
+        new_sales_dict["sale_id"] = str(len(sales))
+        new_sales_dict["sale_buyer_id"] = user_session["session_id"]
+        new_sales_dict["sale_product_id"] = checkout_item
+        new_sales_dict["sale_quantity"] = cart["cart_quantity"]
+        new_sales_dict["sale_date"] = str(datetime.datetime.now())
+        
+        #count the total price
+        total_price = 0
+        for cart in carts:
+            if cart["cart_buyer_id"] == user_session["session_id"]:
+                for product in products:
+                    if product["product_id"] == cart["cart_product_id"]:
+                        total_price = (int(cart["cart_quantity"]) * int(product["product_unit_price"]))
+                        break
+        new_sales_dict["sale_total_amount"] = str(total_price)
+        sale_save_dict(new_sales_dict)
+        #change the cart_checkedout to 1
+        for cart in carts:
+            if cart["cart_buyer_id"] == user_session["session_id"]:
+                cart["cart_checkedout"] = "1"
+        cart_flush_to_file()
+        print("Checkout successful!")
+    else:
+        input("Press [ENTER] to continue..")
+        
 #view total expenses
 def buyer_view_total_expenses():
-    """View total expenses
+    """Compute the total sales for current logged in seller.
     """
+    global sales
     global user_session
-
-    print(">>[View Total Expenses]<<")
-
-    #get the cart of the buyer
-    cart = product_get_cart(user_session["session_id"])
-
-    #calculate the total expenses
-    total_expenses = 0
-    for product in cart:
-        total_expenses += int(product["product_quantity"]) * float(product["product_unit_price"])
-
-    print("Total Expenses: " + str(total_expenses))
+    #load sales database
+    sale_load_db()
+    #go over the "sales" global variable 
+    # and check for items related to the current 
+    # logged in user 
+    buyer_view_total_expenses = 0;
+    #look for the current logged in user
+    for sale in sales:
+        if sale["sale_buyer_id"] == user_session["session_id"]:
+            buyer_view_total_expenses += int(sale["sale_total_amount"])    
+    
+    print("Your total expense: ", buyer_view_total_expenses)
+    input("Press [ENTER] to continue..")

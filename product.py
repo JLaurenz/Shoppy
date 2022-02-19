@@ -114,13 +114,14 @@ def product_search(search_term):
     #we are using the global variable
     global  products
     #create search_results
-    search_results = []
-    #use search term to search for products in product_category, product_name, and product description and use .lower() to make the search case insensitive
+    product_search_dict = {}
+    #search for the product using the product_name key, product_category key, and product_description key in a loop
     for product_dict in products:
         if search_term.lower() in product_dict["product_category"].lower() or search_term.lower() in product_dict["product_name"].lower() or search_term.lower() in product_dict["product_description"].lower():
-            search_results.append(product_dict)
-    #return search_results
-    return search_results
+            #add all the matching products to the search_results dictionary
+            product_search_dict[product_dict["product_id"]] = product_dict
+    #return the search_results dictionary
+    return product_search_dict
 
 def product_view_search():
     """Searchs for a product.
@@ -129,17 +130,18 @@ def product_view_search():
     global  products
     
     #enter search term
-    search_term = input("Keyword: ")
+    product_search_term = input("Keyword: ")
     #use product_search() to search for products and store the value
-    search_results = product_search(search_term)
+    product_search_dict = product_search(product_search_term)
     #count the number of search results and print 
-    print(str(len(search_results))+" match(es) found")
+    print(str(len(product_search_dict))+" match(es) found")
     #print the search results
-    for search_result in search_results:
-        print("[ "+ str(search_result["product_id"])+" ] - "+ str(search_result["product_name"]) + " , "+str(search_result["product_category"]) + " , "+ str(search_result["product_description"]) + " , "+str(search_result["product_unit_price"])+" per unit, "+str(search_result["product_quantity"])+" unit(s)")        
+    for key, product_search_results in product_search_dict.items():
+        #print product id
+        print(" [ " + str(key)+" ] - "+ str(product_search_results["product_name"]) + " , "+str(product_search_results["product_category"]) + " , "+ str(product_search_results["product_description"]) + " , "+str(product_search_results["product_unit_price"])+" per unit, "+str(product_search_results["product_quantity"])+" unit(s)")        
     
     input("Press [ENTER] to continue..")
-    return search_result
+    return product_search_dict
 
 def product_flush_to_file():
     product_db_handle = open("data/product.db","w")
