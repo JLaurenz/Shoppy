@@ -273,7 +273,6 @@ def seller_view_add_product():
     new_product_dict["product_description"] = str(input("Product Description: "))
     new_product_dict["product_quantity"] = str(input("Quantity: "))
     new_product_dict["product_unit_price"] = str(input("Unit Price: "))
-    print(new_product_dict)
     #save and reload by calling the functions in
     #product.py
     product_save_dict(new_product_dict)
